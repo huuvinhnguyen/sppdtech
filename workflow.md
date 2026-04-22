@@ -2,13 +2,11 @@
 
 ## 1. Git Workflow
 
-### 1.1 Branching Strategy
+### 1.1 Branching Strategy (Đơn giản)
 
 ```
-main          ← Nhánh production (production-ready)
-    ↓
-develop       ← Nhánh tích hợp (dev)
-    ↓
+main          ← Nhánh production (chỉ merge khi test OK)
+    ↑
 feature/*     ← Nhánh tính năng
 hotfix/*      ← Nhánh sửa lỗi khẩn cấp
 ```
@@ -17,10 +15,9 @@ hotfix/*      ← Nhánh sửa lỗi khẩn cấp
 
 | Loại | Format | Ví dụ |
 |------|--------|-------|
-| Tính năng | `feature/<ticket>-<mota-ngan>` | `feature/SPPD-15-them-trang-gioi-thieu` |
-| Sửa lỗi | `hotfix/<ticket>-<mota-ngan>` | `hotfix/SPPD-23-sua-loi-slider` |
-| Refactor | `refactor/<mota-ngan>` | `refactor/to-chuc-file-css` |
-| Chore | `chore/<mota-ngan>` | `chore-cap-nhat-dependencies` |
+| Tính năng | `feature/HV-ten-tinh-nang` | `feature/HV-them-trang-gioi-thieu` |
+| Sửa lỗi | `hotfix/HV-ten-loi` | `hotfix/HV-sua-loi-slider` |
+| Chore | `chore/HV-ten-cong-viec` | `chore/HV-update-blocksy-2.1.40` |
 
 ### 1.2 Commit Message Convention
 
@@ -61,35 +58,23 @@ git commit -m "thêm cái này cái kia"
 
 ### 1.3 Git Operations Flow
 
-#### Chuẩn bị lần đầu (chỉ làm 1 lần):
-
-```bash
-# 1. Tạo nhánh develop từ main
-git checkout main
-git checkout -b develop
-git push -u origin develop
-```
-
 #### Bắt đầu tính năng mới:
 
 ```bash
-# Luôn bắt đầu từ develop mới nhất
-git checkout develop
-git pull origin develop
+# Luôn bắt đầu từ main mới nhất
+git checkout main
+git pull origin main
 
-# Tạo branch mới (theo format: feature/HV-ten-tinh-nang)
+# Tạo branch mới (thay HV bằng initials của bạn)
 git checkout -b feature/HV-them-trang-gioi-thieu
-
-# Hoặc dùng alias đã setup
-git feature them-trang-gioi-thieu
 ```
 
 #### Trong quá trình làm:
 
 ```bash
-# Thường xuyên sync với develop (rebase)
+# Thường xuyên sync với main (rebase)
 git fetch origin
-git rebase origin/develop
+git rebase origin/main
 
 # Commit thay đổi (commit nhỏ, commit thường xuyên)
 git add .
@@ -101,37 +86,26 @@ git commit -m "feat(about): tạo template trang giới thiệu"
 ```bash
 # 1. Rebase lần cuối để đảm bảo code mới nhất
 git fetch origin
-git rebase origin/develop
+git rebase origin/main
 
 # 2. Push branch lên remote
 git push -u origin feature/HV-them-trang-gioi-thieu
 
 # 3. Tạo Pull Request (PR) qua GitHub
-#    GitHub → Pull Requests → New Pull Request → base: develop ← compare: feature/HV-them-trang-gioi-thieu
+#    GitHub → Pull Requests → New Pull Request → base: main
 ```
 
 #### Deploy lên Production (sau khi test OK):
 
 ```bash
-# 1. Merge feature vào develop (squash merge)
-git checkout develop
-git merge --squash feature/HV-them-trang-gioi-thieu
-git commit -m "feat: thêm trang giới thiệu hoàn chỉnh"
+# 1. GitHub: Squash merge PR vào main
 
-# 2. Test trên staging (nếu có)
-#    ssh vào server → pull develop → test
-
-# 3. Merge develop vào main (production)
-git checkout main
-git merge --no-ff develop
-git push origin main
-
-# 4. SSH vào Hostinger deploy
+# 2. Hostinger: Pull main
 ssh -p 65002 u200682234@185.187.241.39
 cd ~/domains/sppdtech.com/public_html
 git pull origin main
 
-# 5. Xóa branch đã merge
+# 3. Xóa branch đã merge
 git branch -d feature/HV-them-trang-gioi-thieu
 git push origin --delete feature/HV-them-trang-gioi-thieu
 ```
@@ -170,21 +144,16 @@ git push origin --delete feature/HV-them-trang-gioi-thieu
 ### 1.5 Merge Strategy
 
 ```
-feature/*  →  develop   (Squash merge - gom commits lại)
-develop   →  main      (Merge commit - production release)
-hotfix/*  →  main      (Merge commit - production)
-hotfix/*  →  develop   (Cherry-pick hoặc merge lại)
+feature/*  →  main   (Squash merge - gom commits lại)
+hotfix/*   →  main   (Squash merge - fix nhanh)
 ```
 
-**Quy tắc quan trọng:**
-- **Squash merge** cho feature → develop: Gom nhiều commits thành 1 commit sạch
-- **Merge commit** cho develop → main: Giữ lại lịch sử release
+**Quy tắc:**
+- **Squash merge** cho feature/hotfix → main
 - **KHÔNG BAO GIỜ** push trực tiếp lên main
-- **LUÔN LUÔN** test trước khi merge vào production
+- **LUÔN LUÔN** test trên production trước khi merge
 
 ### 1.6 Emergency Hotfix Process
-
-Khi có lỗi nghiêm trọng trên production:
 
 ```bash
 # 1. Tạo hotfix branch từ main
@@ -197,20 +166,16 @@ git commit -m "fix(slider): ngăn crash khi ảnh null"
 
 # 3. Test nhanh trên local
 
-# 4. Merge vào main
-git checkout main
-git merge --no-ff hotfix/HV-sua-loi-slider-crash
-git push origin main
+# 4. Push và test trên production
+git push -u origin hotfix/HV-sua-loi-slider-crash
 
-# 5. Deploy ngay lên production
+# 5. SSH Hostinger test
 ssh -p 65002 u200682234@185.187.241.39
 cd ~/domains/sppdtech.com/public_html
-git pull origin main
+git checkout hotfix/HV-sua-loi-slider-crash
+git pull origin hotfix/HV-sua-loi-slider-crash
 
-# 6. Merge lại vào develop
-git checkout develop
-git cherry-pick <hotfix-commit-hash>
-git push origin develop
+# 6. OK → GitHub squash merge → pull main
 ```
 
 ---

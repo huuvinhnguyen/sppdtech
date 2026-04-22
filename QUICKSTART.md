@@ -2,10 +2,10 @@
 
 ## 🚀 QUICK START (5 phút)
 
-### Workflow chính: Test Direct Production
+### Workflow: Test Direct Production
 
 ```
-Local → Push branch → GitHub PR → SSH Hostinger Test → Release
+Local → Push branch → GitHub PR → SSH Hostinger Test → Merge → Release
 ```
 
 ### Chi tiết từng bước
@@ -80,12 +80,10 @@ git pull origin feature/HV-them-trang-about
 
 ```
 wp-content/themes/blocksy/
-├── static/
-│   ├── sass/          ← Sửa SCSS ở đây
-│   └── bundle/        ← Generated (KHÔNG sửa)
-├── inc/               ← PHP logic
-├── template-parts/    ← Template files
-└── functions.php      ← Theme functions
+├── static/sass/     ← Sửa SCSS ở đây
+├── static/bundle/  ← Generated (KHÔNG sửa)
+├── inc/             ← PHP logic
+└── functions.php    ← Theme functions
 ```
 
 ---
@@ -94,7 +92,7 @@ wp-content/themes/blocksy/
 
 | Loại | Format | Ví dụ |
 |------|--------|-------|
-| Branch | `feature/HV-ten-tinh-nang` | `feature/HV-them-trang-about` |
+| Branch | `feature/HV-ten` | `feature/HV-them-trang-about` |
 | Commit | `feat(scope): mô tả` | `feat(header): thêm mega menu` |
 
 ---
@@ -117,7 +115,7 @@ git checkout -- .
 
 ---
 
-## ⚠️ Lưu � ý Quan Trọng
+## ⚠️ Lưu ý Quan Trọng
 
 1. **KHÔNG sửa file trong `static/bundle/`** - Sẽ bị ghi đè khi build
 2. **LUÔN test trên production** trước khi merge vào main
