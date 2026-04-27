@@ -52,10 +52,17 @@ function vnf_contact_save_settings() {
         'show_floating'  => !empty($_POST['show_floating']) ? 1 : 0,
         'show_qr_zalo'   => !empty($_POST['show_qr_zalo']) ? 1 : 0,
         'qr_zalo_image'  => esc_url_raw($_POST['qr_zalo_image'] ?? ''),
+        'show_form'      => !empty($_POST['show_form']) ? 1 : 1,
+        'notify_email'   => !empty($_POST['notify_email']) ? 1 : 0,
     );
 
     update_option('vnf_contact_settings', $settings);
+    
+    // Redirect back with success message
     add_settings_error('vnf_contact', 'saved', 'Đã lưu cài đặt thành công!', 'updated');
+    set_transient('settings_errors', get_settings_errors(), 30);
+    wp_redirect(add_query_arg('settings-updated', 'true', wp_get_referer()));
+    exit;
 }
 
 // ================================================================
@@ -83,6 +90,8 @@ function vnf_contact_settings_page() {
         'show_floating'  => 1,
         'show_qr_zalo'   => 0,
         'qr_zalo_image'  => '',
+        'show_form'      => 1,
+        'notify_email'   => 1,
     );
     $settings = wp_parse_args($settings, $defaults);
     ?>
@@ -187,7 +196,7 @@ function vnf_contact_settings_page() {
                         <th scope="row">Hiện form liên hệ</th>
                         <td>
                             <label>
-                                <input type="checkbox" name="show_form" value="1" checked disabled>
+                                <input type="checkbox" name="show_form" value="1" <?php checked($settings['show_form'], 1); ?>>
                                 Form liên hệ luôn được bật khi sử dụng shortcode
                             </label>
                         </td>
@@ -196,7 +205,7 @@ function vnf_contact_settings_page() {
                         <th scope="row">Gửi email thông báo</th>
                         <td>
                             <label>
-                                <input type="checkbox" name="notify_email" value="1" checked>
+                                <input type="checkbox" name="notify_email" value="1" <?php checked($settings['notify_email'], 1); ?>>
                                 Gửi email khi có tin nhắn mới
                             </label>
                         </td>

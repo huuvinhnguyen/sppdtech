@@ -73,6 +73,8 @@ function vnf_contact_shortcode($atts) {
         'welcome_note'   => '',
         'show_qr_zalo'   => 0,
         'qr_zalo_image'  => '',
+        'show_form'      => 1,
+        'notify_email'   => 1,
     );
     $settings = wp_parse_args($settings, $defaults);
 
